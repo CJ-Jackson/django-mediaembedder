@@ -31,14 +31,12 @@ def __hash__(url):
 
 def parse(kwargs):
     global _init
-
     try:
         url = kwargs['url']
     except:
         return False
     hash = __hash__(url)
     cache_hash = 'mediaembedder_' + hash
-
     object = False
     from django.core.cache import cache
     if cache.get(cache_hash):
@@ -52,20 +50,16 @@ def parse(kwargs):
             if match:
                 object = media(service['func'], hash, url, match)
                 break
-
     if not object:
         return False
-
     try:
         object.width = int(kwargs['width'])
     except:
         lambda x: x
-
     try:
         object.height = int(kwargs['height'])
     except:
         lambda x: x
-
     value = object.execute()
     if not cache.get(cache_hash):
         cache.set(cache_hash, object, 3600)
