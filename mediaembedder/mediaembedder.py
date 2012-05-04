@@ -10,7 +10,7 @@ def __init__():
             for s in module.services:
                 __register__(s)
         except:
-            lambda x:x
+            lambda x: x
     _init = True
 
 def __register__(service):
@@ -38,20 +38,32 @@ def parse(kwargs):
     for service in _services:
         match = re.match(service['re'], url, flags=re.I)
         if match:
-            object = media(service['func'], hash, url)
+            object = media(service['func'], hash, url, match)
             break
 
     if not object:
-        return object
+        return False
+
+    try:
+        object.width = int(kwargs['width'])
+    except:
+        lambda x: x
+
+    try:
+        object.height = int(kwargs['height'])
+    except:
+        lambda x: x
+
     return object.execute()
 
 
 class media(object):
 
-    def __init__(self, service, hash, url):
+    def __init__(self, service, hash, url, match):
         self.service = service
         self.hash = hash
         self.url = url
+        self.match = match
         self.mainTree = None
         self.width = None
         self.height = None
@@ -66,18 +78,52 @@ class media(object):
         except:
             self.dataRecord = None
             self.data = {}
+            self.gatherData()
+
+    def buildMainTree(self):
+        self.mainTree = self.getTreeUrl(self.url)
+
+    def getTree(self, string):
+        import html5lib
+        from html5lib import treebuilders
+        from xml.etree import cElementTree
+        parser = html5lib.HTMLParser(tree=treebuilders.getTreeBuilder("etree", cElementTree), namespaceHTMLElements=False)
+        return parser.parse(string)
+
+    def getTreeUrl(self, url):
+        import html5lib
+        from html5lib import treebuilders
+        from xml.etree import cElementTree
+        parser = html5lib.HTMLParser(tree=treebuilders.getTreeBuilder("etree", cElementTree), namespaceHTMLElements=False)
+        from urllib2 import build_opener
+        opener = build_opener()
+        opener.addheaders = [('User-agent', 'Mozilla/5.0'), ('Accept', '*/*')] # To get round anti-spam system.
+        return parser.parse(opener.open(url).read())
+
+    def gatherData(self):
+        if not self.mainTree:
+            self.buildMainTree()
+        meta = {}
+        for element in self.mainTree.findall('head/meta'):
+            key = element.get('property')
+            if key == None:
+                key = element.get('name')
+            if key != None:
+                meta[key] = element.get('content')
+        self.data['meta'] = meta
+        self.updateDataRecord()
 
     def updateDataRecord(self):
-        if not self.dataRecord:
-            from .models import Cache
-            self.dataRecord = Cache.objects.create(hash=self.hash, data='_new_')
         import cPickle as pickle
         data = pickle.dumps(self.data, 2)
-        self.dataRecord.data = data
-        self.dataRecord.save()
+        if not self.dataRecord:
+            from .models import Cache
+            self.dataRecord = Cache.objects.create(hash=self.hash, data=data)
+        else:
+            self.dataRecord.data = data
+            self.dataRecord.save()
 
     def execute(self):
         value = self.service()
         self.mainTree = None
         return value
-
