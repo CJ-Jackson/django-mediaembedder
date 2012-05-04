@@ -11,7 +11,7 @@ def __init__():
     from importlib import import_module
     for service in theservices[1:]:
         service = service.split('/').pop()
-        service = service.split('.')[0]
+        service = service[:-3]
         try:
             module = import_module(services.__name__+ '.' + service)
             for s in module.services:
