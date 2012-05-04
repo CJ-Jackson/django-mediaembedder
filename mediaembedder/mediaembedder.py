@@ -4,9 +4,16 @@ _init = False
 def __init__():
     global _init
     from . import services
-    for service in dir(services):
+    from os import path
+    service_path = path.dirname(services.__file__)
+    from glob import glob
+    theservices = glob(service_path + '/*.py')
+    from importlib import import_module
+    for service in theservices[1:]:
+        service = service.split('/').pop()
+        service = service.split('.')[0]
         try:
-            module = getattr(services, service)
+            module = import_module(services.__name__+ '.' + service)
             for s in module.services:
                 __register__(s)
         except:
@@ -14,7 +21,7 @@ def __init__():
     _init = True
 
 def __register__(service):
-    _services.add(service)
+    _services.append(service)
 
 def __hash__(url):
     import hashlib
@@ -24,22 +31,27 @@ def __hash__(url):
 
 def parse(kwargs):
     global _init
-    if not _init:
-        __init__()
+
     try:
         url = kwargs['url']
     except:
         return False
-
     hash = __hash__(url)
+    cache_hash = 'mediaembedder_' + hash
 
     object = False
-    import re
-    for service in _services:
-        match = re.match(service['re'], url, flags=re.I)
-        if match:
-            object = media(service['func'], hash, url, match)
-            break
+    from django.core.cache import cache
+    if cache.get(cache_hash):
+        object = cache.get(cache_hash)
+    else:
+        if not _init:
+            __init__()
+        import re
+        for service in _services:
+            match = re.match(service['re'], url, flags=re.I)
+            if match:
+                object = media(service['func'], hash, url, match)
+                break
 
     if not object:
         return False
@@ -54,7 +66,10 @@ def parse(kwargs):
     except:
         lambda x: x
 
-    return object.execute()
+    value = object.execute()
+    if not cache.get(cache_hash):
+        cache.set(cache_hash, object, 3600)
+    return value
 
 
 class media(object):
@@ -73,12 +88,12 @@ class media(object):
         try:
             from .models import Cache
             self.dataRecord = Cache.objects.get(hash=self.hash)
-            import cPickle as pickle
-            self.data = pickle.loads(self.dataRecord.data)
+            import json
+            self.data = json.loads(self.dataRecord.data)
         except:
             self.dataRecord = None
             self.data = {}
-            self.gatherData()
+            self.gatherMeta()
 
     def buildMainTree(self):
         self.mainTree = self.getTreeUrl(self.url)
@@ -100,7 +115,7 @@ class media(object):
         opener.addheaders = [('User-agent', 'Mozilla/5.0'), ('Accept', '*/*')] # To get round anti-spam system.
         return parser.parse(opener.open(url).read())
 
-    def gatherData(self):
+    def gatherMeta(self):
         if not self.mainTree:
             self.buildMainTree()
         meta = {}
@@ -111,11 +126,11 @@ class media(object):
             if key != None:
                 meta[key] = element.get('content')
         self.data['meta'] = meta
-        self.updateDataRecord()
+        self.saveData()
 
-    def updateDataRecord(self):
-        import cPickle as pickle
-        data = pickle.dumps(self.data, 2)
+    def saveData(self):
+        import json
+        data = json.dumps(self.data)
         if not self.dataRecord:
             from .models import Cache
             self.dataRecord = Cache.objects.create(hash=self.hash, data=data)
@@ -123,7 +138,17 @@ class media(object):
             self.dataRecord.data = data
             self.dataRecord.save()
 
+    def render(self, template, map={}):
+        from django.template import Context, loader
+        template = 'mediaembedder/' + template
+        template = loader.get_template(template)
+        context = Context(map)
+        return template.render(context)
+
     def execute(self):
-        value = self.service()
+        value = self.service(self)
+        # Make it Django Cache Framework Friendly
         self.mainTree = None
+        self.width = None
+        self.height = None
         return value
