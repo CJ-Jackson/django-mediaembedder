@@ -9,7 +9,7 @@ def __init__():
     from glob import glob
     theservices = glob(service_path + '/*.py')
     from importlib import import_module
-    for service in theservices[1:]:
+    for service in theservices:
         service = service.split('/').pop()
         service = service[:-3]
         try:
