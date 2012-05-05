@@ -4,9 +4,16 @@ Automatically produce embed code from media sharing site such as YouTube.
 
 ## Requirement
 
-*	Django 1.4 or greater (Due to use of '**kwargs' in Simple Tag )
+*	Django 1.4 or greater (Due to use of '**kwargs' in Simple Tag ) with database access!
 *	Python 2.7 or (Python 3.2 or greater)
 *	[html5lib](http://code.google.com/p/html5lib/)
+
+## Prepare
+Execute
+
+	python manage.py syncdb
+
+In project before use!
 
 ## Usage
 
