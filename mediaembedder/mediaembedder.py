@@ -46,7 +46,7 @@ def parse(kwargs):
             __init__()
         import re
         for service in _services:
-            match = re.match(service['re'], url, flags=re.I)
+            match = re.match(service['re'], url, re.I)
             if match:
                 object = media(service['func'], hash, url, match)
                 break
