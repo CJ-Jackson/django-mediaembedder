@@ -15,7 +15,7 @@ def youtube(self):
         try:
             height = int(self.data['meta']['og:video:height'])
         except:
-            height = 368
+            height = 360
     return self.render('youtube.html', {
         'id': id, 'width': width, 'height': height
     })
