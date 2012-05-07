@@ -51,7 +51,7 @@ def parse(kwargs):
                 object = media(service['func'], hash, url, match)
                 break
     if not object:
-        return False
+        return '<a href="%s">%s</a>' % (str(url), str(url))
     try:
         object.width = int(kwargs['width'])
     except:
