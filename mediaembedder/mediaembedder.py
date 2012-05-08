@@ -62,9 +62,9 @@ def parse(kwargs):
         except:
             lambda x: x
         value = object.execute()
+        if not cache.get(cache_hash):
+            cache.set(cache_hash, object, 3600)
         if value:
-            if not cache.get(cache_hash):
-                cache.set(cache_hash, object, 3600)
             return value
         else:
             raise Exception("Value returned false!")
