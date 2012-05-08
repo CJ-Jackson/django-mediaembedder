@@ -38,32 +38,38 @@ def parse(kwargs):
     hash = __hash__(url)
     cache_hash = 'mediaembedder_' + hash
     object = False
-    from django.core.cache import cache
-    if cache.get(cache_hash):
-        object = cache.get(cache_hash)
-    else:
-        if not _init:
-            __init__()
-        import re
-        for service in _services:
-            match = re.match(service['re'], url, re.I)
-            if match:
-                object = media(service['func'], hash, url, match)
-                break
-    if not object:
+    try:
+        from django.core.cache import cache
+        if cache.get(cache_hash):
+            object = cache.get(cache_hash)
+        else:
+            if not _init:
+                __init__()
+            import re
+            for service in _services:
+                match = re.match(service['re'], url, re.I)
+                if match:
+                    object = media(service['func'], hash, url, match)
+                    break
+        if not object:
+            raise Exception("Not an object!")
+        try:
+            object.width = int(kwargs['width'])
+        except:
+            lambda x: x
+        try:
+            object.height = int(kwargs['height'])
+        except:
+            lambda x: x
+        value = object.execute()
+        if value:
+            if not cache.get(cache_hash):
+                cache.set(cache_hash, object, 3600)
+            return value
+        else:
+            raise Exception("Value returned false!")
+    except:
         return '<a href="%s">%s</a>' % (str(url), str(url))
-    try:
-        object.width = int(kwargs['width'])
-    except:
-        lambda x: x
-    try:
-        object.height = int(kwargs['height'])
-    except:
-        lambda x: x
-    value = object.execute()
-    if not cache.get(cache_hash):
-        cache.set(cache_hash, object, 3600)
-    return value
 
 
 class media(object):
