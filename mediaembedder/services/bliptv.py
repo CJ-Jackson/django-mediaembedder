@@ -22,6 +22,6 @@ def bliptv(self):
     })
 
 services.append({
-        're': '^http://(.*)blip.tv/(?P<bliptv_group>[^/]+)/(?P<bliptv_title>[a-zA-Z0-9-]+)-(?P<bliptv_id>\d+)',
+        're': '^http://(.*)blip.tv/(?P<bliptv_group>[^/]+)/(?P<bliptv_title>[a-zA-Z0-9-_]+)-(?P<bliptv_id>\d+)',
         'func': bliptv
     })
