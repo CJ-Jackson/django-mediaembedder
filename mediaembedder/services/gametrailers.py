@@ -2,14 +2,12 @@ services = []
 
 def gametrailers(self):
     id = self.match.group('gametrailers_id')
+    width = 640
+    height = 360
     if self.width:
         width = self.width
-    else:
-        width = 640
     if self.height:
         height = self.height
-    else:
-        height = 360
     return self.render('gametrailers.html', {'id': id, 'width': width, 'height': height})
 
 services.append({
