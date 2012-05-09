@@ -3,14 +3,12 @@ services = []
 def metacafe(self):
     id = self.match.group('metacafe_id')
     title = self.match.group('metacafe_title')
+    width = 640
+    height = 360
     if self.width:
         width = self.width
-    else:
-        width = 640
     if self.height:
         height = self.height
-    else:
-        height = 360
     return self.render('metacafe.html', {'id': id, 'title': title, 'width': width, 'height': height})
 
 services.append({
