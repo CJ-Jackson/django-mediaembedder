@@ -2,20 +2,16 @@ services = []
 
 def collegehumor(self):
     id = self.match.group('collegehumor_id')
+    width = 640
+    height = 360
     if self.width:
         width = self.width
-    else:
-        try:
-            width = int(self.data['meta']['og:video:width'])
-        except:
-            width = 640
+    elif 'og:video:width' in self.data['meta']:
+        width = int(self.data['meta']['og:video:width'])
     if self.height:
         height = self.height
-    else:
-        try:
-            height = int(self.data['meta']['og:video:height'])
-        except:
-            height = 360
+    elif 'og:video:height' in self.data['meta']:
+        height = int(self.data['meta']['og:video:height'])
     return self.render('collegehumor.html', {
         'id': id, 'width': width, 'height': height
     })
