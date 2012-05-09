@@ -53,14 +53,15 @@ def parse(kwargs):
                     break
         if not object:
             raise Exception("Not an object!")
+        from django.conf import settings
         try:
             object.width = int(kwargs['width'])
         except:
-            lambda x: x
+            object.width = getattr(settings, 'MEDIAEMBEDDER_DEFAULT_WIDTH', None)
         try:
             object.height = int(kwargs['height'])
         except:
-            lambda x: x
+            object.height = getattr(settings, 'MEDIAEMBEDDER_DEFAULT_HEIGHT', None)
         value = object.execute()
         if not cache.get(cache_hash):
             cache.set(cache_hash, object, 3600)
