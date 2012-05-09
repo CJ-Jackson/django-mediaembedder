@@ -9,14 +9,16 @@ def revision3(self):
             self.data['id'] = match.group('id')
             self.saveData()
     id = self.data['id']
+    width = 640
+    height = 360
     if self.width:
         width = self.width
-    else:
-        width = self.data['meta']['og:video:width']
+    elif 'og:video:width' in self.data['meta']:
+        width = int(self.data['meta']['og:video:width'])
     if self.height:
         height = self.height
-    else:
-        height = self.data['meta']['og:video:height']
+    elif 'og:video:height' in self.data['meta']:
+        height = int(self.data['meta']['og:video:height'])
     return self.render('revision3.html', {'id': id, 'width': width, 'height': height})
 
 services.append({
