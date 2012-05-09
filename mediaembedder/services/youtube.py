@@ -2,20 +2,16 @@ services = []
 
 def youtube(self):
     id = self.match.group('youtube_id')
+    width = 640
+    height = 360
     if self.width:
         width = self.width
-    else:
-        try:
-            width = int(self.data['meta']['og:video:width'])
-        except:
-            width = 640
+    elif 'og:video:width' in self.data['meta']:
+        width = int(self.data['meta']['og:video:width'])
     if self.height:
         height = self.height
-    else:
-        try:
-            height = int(self.data['meta']['og:video:height'])
-        except:
-            height = 360
+    elif 'og:video:height' in self.data['meta']:
+        height = int(self.data['meta']['og:video:height'])
     return self.render('youtube.html', {
         'id': id, 'width': width, 'height': height
     })
@@ -35,14 +31,12 @@ services.append({
 
 def youtube_playlist(self):
     id = self.match.group('youtube_playlist_id')
+    width = 640
+    height = 368
     if self.width:
         width = self.width
-    else:
-        width = 640
     if self.height:
         height = self.height
-    else:
-        height = 368
     return self.render('youtube_playlist.html', {
         'id': id, 'width': width, 'height': height
     })
