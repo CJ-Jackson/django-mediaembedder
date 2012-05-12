@@ -31,11 +31,13 @@ def revision3_broadcast(self):
         if not self.mainTree:
             self.buildMainTree()
         import re
-        prog = re.compile('^(.*)http://revision3.com/html5player-s(?P<id>\d+)')
+        prog = re.compile('^(.*)http://revision3.com/html5player-s(?P<id>\d+)(.*)width=(?P<width>\d+)(.*)height=(?P<height>\d+)')
         for textarea in self.mainTree.iter('textarea'):
             match = prog.match(textarea.text)
             if match:
                 self.data['id'] = match.group('id')
+                self.data['width'] = match.group('width')
+                self.data['height'] = match.group('height')
                 self.saveData()
                 break
     id = self.data['id']
@@ -43,8 +45,12 @@ def revision3_broadcast(self):
     height = 360
     if self.width:
         width = self.width
+    elif 'width' in self.data:
+        width = self.data['width']
     if self.height:
         height = self.height
+    elif 'height' in  self.data:
+        height = self.data['height']
     return self.render('revision3_broadcast.html', {'id': id, 'width': width, 'height': height})
 
 services.append({
